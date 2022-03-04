@@ -2,6 +2,7 @@
 using ApplicationCore.Interfaces;
 using ApplicationCore.Specifications;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,10 +24,13 @@ namespace Web.Services
             _brandRepo = brandRepo;
         }
 
-        public async Task<HomeViewModel> GetHomeViewModelAsync(int? categoryId, int? brandId)
+        public async Task<HomeViewModel> GetHomeViewModelAsync(int? categoryId, int? brandId, int page)
         {
-            var specProduct = new HomeFilterSpecification(categoryId, brandId);
-            List<Product> products = await _productRepo.GetAllAsync(specProduct);
+            var specAllProducts = new ProductsFilterSpecification(categoryId, brandId);
+            int totalItems = await _productRepo.CountAsync(specAllProducts);
+            int totalPages = (int)Math.Ceiling((double)totalItems / Constants.ITEMS_PER_PAGE);
+            var specProducts = new ProductsFilterSpecification(categoryId, brandId, (page - 1) * Constants.ITEMS_PER_PAGE, Constants.ITEMS_PER_PAGE);
+            List<Product> products = await _productRepo.GetAllAsync(specProducts);
             HomeViewModel vm = new HomeViewModel()
             {
                 Products = products.Select(x => new ProductViewModel()
@@ -41,7 +45,16 @@ namespace Web.Services
                 Brands = (await _brandRepo.GetAllAsync()).Select(x =>
                     new SelectListItem(x.Name, x.Id.ToString())).ToList(),
                 CategoryId = categoryId,
-                BrandId = brandId
+                BrandId = brandId,
+                PaginationInfo = new PaginationInfoViewModel()
+                {
+                    CurrentPage = page,
+                    ItemsOnPage = products.Count,
+                    TotalItems = totalItems,
+                    TotalPages = totalPages,
+                    HasPrevious = page > 1,
+                    HasNext = page < totalPages
+                }
 
             };
             return vm;
