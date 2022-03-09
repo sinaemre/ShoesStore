@@ -21,9 +21,9 @@
             <div class="col-12">
                 <label>Brand</label>
             </div>
-            
+
             <div class="col-12">
-                 <select class="form-select" asp-items="Model.Brands" asp-for="BrandId">
+                <select class="form-select" asp-items="Model.Brands" asp-for="BrandId">
                     <option value="">All</option>
                 </select>
             </div>
@@ -45,30 +45,31 @@
                 <div class="card-body">
                     <h6 class="card-title product-title">@item.Name</h6>
                     <div class="d-flex align-items-center">
-                        <span class="card-text fs-2 fw-bold">@item.Price.ToString("c2")</span>
-                        <a href="#" class="btn btn-primary ms-auto"><i class="fas fa-cart-plus"></i></a>
+                        <div class="fw-bold">@item.Price.ToString("c2")</div>
+                        <a data-add-item="@item.Id" href="#" class="btn btn-outline-primary ms-auto">
+                            <i class="fas fa-cart-plus"></i>
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     }
 </div>
-
 @{
     var pi = Model.PaginationInfo;
 }
 
 <p class="text-center">
-    Showing @pi.Start-@pi.End of @pi.TotalItems items
+    Showing @pi.Start - @pi.End of @pi.TotalItems items
 </p>
 
 <nav aria-label="Page navigation example">
-  <ul class="pagination justify-content-center">
-    <li class="page-item @(pi.HasPrevious ? "" : "disabled")">
-      <a class="page-link" asp-route-p="@(pi.CurrentPage - 1)" 
-      asp-route-CategoryId="@Model.CategoryId" asp-route-BrandId="@Model.BrandId">Previous</a>
-    </li>
-    @foreach(int i in pi.PageNumbers)
+    <ul class="pagination justify-content-center">
+        <li class="page-item @(pi.HasPrevious ? "" : "disabled")">
+            <a class="page-link" asp-route-p="@(pi.CurrentPage - 1)" asp-route-CategoryId="@Model.CategoryId" asp-route-BrandId="@Model.BrandId">Previous</a>
+        </li>
+
+        @foreach (int i in pi.PageNumbers)
         {
             if (i == -1)
             {
@@ -76,20 +77,34 @@
                     <a class="page-link">&hellip;</a>
                 </li>
             }
-
             else
             {
                 <li class="page-item @(i == pi.CurrentPage ? "active" : "")">
-                    <a class="page-link" asp-route-p="@i" 
-                    asp-route-CategoryId="@Model.CategoryId" asp-route-BrandId="@Model.BrandId">@i</a>
+                    <a class="page-link" asp-route-p="@i" asp-route-CategoryId="@Model.CategoryId" asp-route-BrandId="@Model.BrandId">@i</a>
                 </li>
             }
         }
-    
 
-    <li class="page-item @(pi.HasNext ? "" : "disabled")">
-      <a class="page-link" asp-route-p="@(pi.CurrentPage + 1)" 
-      asp-route-CategoryId="@Model.CategoryId" asp-route-BrandId="@Model.BrandId">Next</a>
-    </li>
-  </ul>
+        <li class="page-item @(pi.HasNext ? "" : "disabled")">
+            <a class="page-link" asp-route-p="@(pi.CurrentPage + 1)" asp-route-CategoryId="@Model.CategoryId" asp-route-BrandId="@Model.BrandId">Next</a>
+        </li>
+    </ul>
 </nav>
+
+@section Scripts {
+<script>
+    $("[data-add-item]").click(function(event) {
+        event.preventDefault();
+        var id = $(this).data("add-item");
+        $.ajax({
+            url: "@Url.Action("AddToBasket", "Basket")",
+            type: "post",
+            data: { productId: id, quantity: 1 },
+            success: function(data) {
+                $("#navBasketItemsCount").text(data.totalItemsCount);
+                toastr.success("The item has been added to the basket.");
+            }
+        })
+    });
+</script>
+}

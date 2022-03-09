@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace ApplicationCore.Specifications
 {
-    public class BasketSpesification : Specification<Basket>
+    public class BasketSpecification : Specification<Basket>
     {
-        public BasketSpesification(string buyerId)
+        public BasketSpecification(string buyerId)
         {
             Query.Where(x => x.BuyerId == buyerId);
         }

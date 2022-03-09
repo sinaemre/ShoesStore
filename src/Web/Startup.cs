@@ -1,4 +1,5 @@
 using ApplicationCore.Interfaces;
+using ApplicationCore.Services;
 using Infrastructure.Data;
 using Infrastructure.Identity;
 using Infrastructure.Indentity;
@@ -38,6 +39,8 @@ namespace Web
                 .AddEntityFrameworkStores<AppIdentityDbContext>();
 
             services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
+            services.AddScoped<IBasketService, BasketService>();
+            services.AddScoped<IBasketViewModelService, BasketViewModelService>();
             services.AddScoped<IHomeViewModelService, HomeViewModelService>();
 
             services.AddControllersWithViews();

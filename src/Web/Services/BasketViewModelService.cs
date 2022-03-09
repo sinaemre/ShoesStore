@@ -3,6 +3,7 @@ using ApplicationCore.Interfaces;
 using ApplicationCore.Specifications;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Web.Interfaces;
@@ -14,23 +15,45 @@ namespace Web.Services
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IRepository<Basket> _basketRepo;
+        private readonly IBasketService _basketService;
 
-        public BasketViewModelService(IHttpContextAccessor httpContextAccessor, IRepository<Basket> basketRepo)
+        public BasketViewModelService(IHttpContextAccessor httpContextAccessor, IRepository<Basket> basketRepo, IBasketService basketService)
         {
             _httpContextAccessor = httpContextAccessor;
             _basketRepo = basketRepo;
+            _basketService = basketService;
         }
         public async Task<BasketViewModel> AddToBasketAsync(int productId, int quantity)
         {
             var basket = await GetOrCreateBasketAsync();
-            //todo : application core da BasketService : IBasketService oluştur ve AddItemToBasket metodu yaz, burada kullan, geriye dönen basket nesnesini BasketViewModel'e dönüştür ve geriye döndür.
-            return null;
+
+            basket = await _basketService.AddItemToBasketAsync(basket.Id, productId, quantity);
+
+            return BasketToViewModel(basket);
+        }
+
+        private BasketViewModel BasketToViewModel(Basket basket)
+        {
+            return new BasketViewModel()
+            {
+                Id = basket.Id,
+                BuyerId = basket.BuyerId,
+                Items = basket.Items.Select(x => new BasketItemViewModel() 
+                {
+                    Id = x.Id, 
+                    ProductId = x.ProductId,
+                    Quantity = x.Quantity,
+                    ProductName = x.Product.Name,
+                    PictureUri = x.Product.PictureUri,
+                    UnitPrice = x.Product.Price
+                }).ToList()
+            };
         }
 
         public async Task<Basket> GetOrCreateBasketAsync()
         {
             var buyerId = await GetOrCreateBuyerIdAsync();
-            var specBasket = new BasketSpesification(buyerId);
+            var specBasket = new BasketSpecification(buyerId);
             var basket = await _basketRepo.FirstODefaultAsync(specBasket);
 
             if (basket == null)
@@ -63,12 +86,26 @@ namespace Web.Services
             return newId;
 
         }
+        
+        public async Task<BasketViewModel> GetBasketViewModelAsync()
+        {
+            var basketId = (await GetOrCreateBasketAsync()).Id;
+            var specBasket = new BasketWithItemsSpecification(basketId);
+
+            var basket = await _basketRepo.FirstODefaultAsync(specBasket);
+            return BasketToViewModel(basket);
+        }
+
+        public async Task<int> GetBasketItemsCountAsync()
+        {
+            var basket = await GetBasketViewModelAsync();
+            return basket.TotalItemsCount;
+        }
+       
         private string GetAnonymousBuyerId()
         {
             return _httpContextAccessor.HttpContext.Request.Cookies[Constants.BASKET_COOKIENAME];
         }
-
-
 
         private string GetLoggedInUserId()
         {
@@ -77,5 +114,6 @@ namespace Web.Services
 
             return _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
         }
+
     }
 }

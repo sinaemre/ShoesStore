@@ -9,5 +9,6 @@ namespace Web.Models
         public string BuyerId { get; set; }
         public List<BasketItemViewModel> Items { get; set; }
         public int TotalItemsCount => Items.Sum(x => x.Quantity);
+        public decimal TotalPrice => Items.Sum(x => x.TotalPrice);
     }
 }

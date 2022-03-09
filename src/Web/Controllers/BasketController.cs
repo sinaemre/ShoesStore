@@ -1,18 +1,31 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
+using Web.Interfaces;
+using Web.Models;
 
 namespace Web.Controllers
 {
     public class BasketController : Controller
     {
-        public IActionResult Index()
+        private readonly IBasketViewModelService _basketViewModelService;
+
+        public BasketController(IBasketViewModelService basketViewModelService)
         {
-            return View();
+            _basketViewModelService = basketViewModelService;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            return View(await _basketViewModelService.GetBasketViewModelAsync() );
         }
 
         [HttpPost]
-        public IActionResult AddToBasket(int productId, int quantity = 1)
+        public async Task<IActionResult> AddToBasket(int productId, int quantity = 1)
         {
-            return null;
+            var basket = await _basketViewModelService.AddToBasketAsync(productId, quantity);
+
+            return Json(new NavBasketViewModel() { TotalItemsCount = basket.TotalItemsCount });
+
         }
     }
 }

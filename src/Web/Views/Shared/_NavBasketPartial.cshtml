@@ -1,0 +1,12 @@
+﻿@inject IBasketViewModelService _basketVmService
+
+<ul class="navbar-nav">
+    <li class="nav-item">
+        <a asp-controller="Basket" asp-action="Index" class="nav-link text-dark">
+            <i class="fa-solid fa-basket-shopping"></i> My Basket 
+            <span id="navBasketItemsCount" class="badge rounded-pill bg-dark">
+                @(await _basketVmService.GetBasketItemsCountAsync())
+            </span>
+        </a>
+    </li>
+</ul>
