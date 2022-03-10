@@ -1,4 +1,5 @@
 ﻿using ApplicationCore.Entities;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Web.Models;
 
@@ -15,5 +16,7 @@ namespace Web.Interfaces
         Task<Basket> GetOrCreateBasketAsync();
 
         Task<string> GetOrCreateBuyerIdAsync();
+
+        Task<BasketViewModel> UpdateBasketIdAsync(Dictionary<int, int> quantities);
     }
 }
