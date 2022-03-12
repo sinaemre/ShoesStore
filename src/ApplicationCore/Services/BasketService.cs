@@ -30,7 +30,7 @@ namespace ApplicationCore.Services
             if (product == null) 
                 throw new ArgumentException($"Product with the id {productId} cannot be found.");
             var spec = new BasketWithItemsSpecification(basketId);
-            var basket = await _basketRepo.FirstODefaultAsync(spec);
+            var basket = await _basketRepo.FirstOrDefaultAsync(spec);
             if (basket == null) 
                 throw new ArgumentException($"Basket with the id {basketId} cannot be found.");
 
@@ -69,7 +69,7 @@ namespace ApplicationCore.Services
             if (quantities.Values.Any(x => x < 1))
                 throw new ArgumentException("Quantity must be grater than zero");
             var spec = new BasketWithItemsSpecification(basketId);
-            var basket = await _basketRepo.FirstODefaultAsync(spec);
+            var basket = await _basketRepo.FirstOrDefaultAsync(spec);
             if (basket == null)
                 throw new ArgumentException($"Basket with the id {basketId} cannot be found.");
 
@@ -84,6 +84,36 @@ namespace ApplicationCore.Services
             await _basketRepo.UpdateAsync(basket);
 
             return basket;
+        }
+
+        public async Task TransferBasketAsync(string anonymousId, string userId)
+        {
+            var specAnon = new BasketWithItemsSpecification(anonymousId);
+            var anonBasket = await _basketRepo.FirstOrDefaultAsync(specAnon);
+
+            if (anonBasket == null)
+                return;
+            
+            var specUser = new BasketWithItemsSpecification(userId);
+            var userBasket = await _basketRepo.FirstOrDefaultAsync(specUser);
+
+            if (userBasket == null)
+            {
+                userBasket = new Basket() { BuyerId = userId };
+                await _basketRepo.AddAsync(userBasket);
+            }
+
+            foreach (BasketItem item in anonBasket.Items)
+            {
+                BasketItem targetItem = userBasket.Items.FirstOrDefault(x => x.ProductId == item.ProductId);
+                if (targetItem != null)
+                    targetItem.Quantity += item.Quantity;
+                else
+                    userBasket.Items.Add(new BasketItem() { ProductId = item.ProductId, BasketId = item.BasketId, Quantity = item.Quantity});
+
+            }
+                await _basketRepo.UpdateAsync(userBasket);
+                await _basketRepo.DeleteAsync(anonBasket);
         }
     }
 }

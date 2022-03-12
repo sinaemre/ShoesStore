@@ -10,7 +10,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Security.Claims;
 using Web.Interfaces;
+using Web.Middlewares;
 using Web.Services;
 
 namespace Web
@@ -75,6 +77,8 @@ namespace Web
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseBasketTransfer();
 
             app.UseEndpoints(endpoints =>
             {

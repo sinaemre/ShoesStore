@@ -62,7 +62,7 @@ namespace Web.Services
         {
             var buyerId = await GetOrCreateBuyerIdAsync();
             var specBasket = new BasketSpecification(buyerId);
-            var basket = await _basketRepo.FirstODefaultAsync(specBasket);
+            var basket = await _basketRepo.FirstOrDefaultAsync(specBasket);
 
             if (basket == null)
             {
@@ -100,7 +100,7 @@ namespace Web.Services
             var basketId = (await GetOrCreateBasketAsync()).Id;
             var specBasket = new BasketWithItemsSpecification(basketId);
 
-            var basket = await _basketRepo.FirstODefaultAsync(specBasket);
+            var basket = await _basketRepo.FirstOrDefaultAsync(specBasket);
             return BasketToViewModel(basket);
         }
 
