@@ -12,7 +12,7 @@ namespace ApplicationCore.Entities
         
         public DateTimeOffset OrderDate { get; set; } = DateTimeOffset.Now;
         
-        public Adress ShipToAdress { get; set; }
+        public Address ShipToAdress { get; set; }
 
         public List<OrderItem> OrderItems { get; set; }
 

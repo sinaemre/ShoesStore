@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace ApplicationCore.Entities
 {
-    public class Adress
+    public class Address
     {
-        public Adress()
+        public Address()
         {
 
         }
 
-        public Adress(string street, string city, string state, string zipCode, string country)
+        public Address(string street, string city, string state, string zipCode, string country)
         {
             Street = street;
             City = city;
